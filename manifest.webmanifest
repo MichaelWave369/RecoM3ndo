@@ -1,0 +1,17 @@
+{
+  "name": "RecoM3ndo Traveler Companion",
+  "short_name": "RecoM3ndo",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fb",
+  "theme_color": "#276ef1",
+  "description": "Offline-first travel recommendations with favorites and shareable links.",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

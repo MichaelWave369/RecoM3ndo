@@ -1,0 +1,11 @@
+{
+  "name": "recom3ndo",
+  "version": "0.8.0",
+  "private": true,
+  "scripts": {
+    "check": "node --check app.js",
+    "test": "node test.js",
+    "guard": "node scripts/upgrade-guard.mjs",
+    "verify": "npm run check && npm run test && npm run guard"
+  }
+}
