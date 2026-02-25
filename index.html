@@ -3,21 +3,26 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RecoM3ndo Traveler Assistant</title>
+    <title>RecoM3ndo Traveler Assistant v0.2.0</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <header class="hero">
       <h1>RecoM3ndo Traveler Assistant</h1>
-      <p>
-        Discover trusted recommendations for dining, hotels, entertainment,
-        contractors, government assistance, and employment programs.
-      </p>
+      <p>Phase 6 (v0.2.0): Data Packs, Favorites, Share Links, and Explain-Why scoring.</p>
     </header>
 
     <main>
       <section class="search-panel">
-        <h2>Plan Your Needs</h2>
+        <div class="toolbar">
+          <h2>Plan Your Needs</h2>
+          <div class="toolbar-actions">
+            <button type="button" id="data-btn" class="secondary">Data</button>
+            <button type="button" id="copy-link-btn" class="secondary">Copy Share Link</button>
+            <span id="favorites-count" class="pill">Favorites: 0</span>
+          </div>
+        </div>
+
         <form id="recommendation-form">
           <div class="grid">
             <label>
@@ -67,11 +72,7 @@
 
             <label>
               Keyword Search
-              <input
-                id="keyword"
-                type="text"
-                placeholder="e.g., jobs, kid menu, shuttle"
-              />
+              <input id="keyword" type="text" placeholder="e.g., jobs, kid menu, shuttle" />
             </label>
 
             <label>
@@ -87,7 +88,11 @@
           <div class="controls">
             <label class="checkbox-row">
               <input id="verified-only" type="checkbox" />
-              Show only verified programs/providers
+              Verified only
+            </label>
+            <label class="checkbox-row">
+              <input id="favorites-only" type="checkbox" />
+              Favorites only
             </label>
 
             <div class="actions">
@@ -107,15 +112,41 @@
       </section>
     </main>
 
+    <dialog id="data-modal" class="modal">
+      <form method="dialog" class="modal-content">
+        <h3>Data Pack Manager</h3>
+        <p>Import/export listing packs (schema v1). Imported data is stored locally in your browser.</p>
+        <label>
+          Import JSON
+          <input id="import-pack-input" type="file" accept="application/json" />
+        </label>
+        <p id="data-message" class="modal-message"></p>
+        <div class="actions">
+          <button id="export-pack-btn" type="button">Export JSON</button>
+          <button id="reset-pack-btn" type="button" class="secondary">Reset to Default</button>
+          <button id="close-data-modal-btn" type="submit" class="secondary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
     <template id="card-template">
       <article class="card">
         <div class="card-top">
           <h3 class="name"></h3>
-          <span class="score"></span>
+          <div class="card-top-actions">
+            <span class="score"></span>
+            <button type="button" class="favorite-btn" title="Toggle favorite" aria-label="Toggle favorite">☆</button>
+          </div>
         </div>
         <p class="meta"></p>
         <p class="description"></p>
         <ul class="tags"></ul>
+        <details class="why-details">
+          <summary>Why this match?</summary>
+          <ul class="why-list"></ul>
+        </details>
       </article>
     </template>
 

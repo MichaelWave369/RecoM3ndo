@@ -1,6 +1,6 @@
 # RecoM3ndo Traveler Assistant
 
-A lightweight web app that helps travelers find support and recommendations across:
+RecoM3ndo is a lightweight traveler support web app (vanilla HTML/CSS/JS) for discovering:
 
 - Dining
 - Hotels
@@ -9,25 +9,32 @@ A lightweight web app that helps travelers find support and recommendations acro
 - Government assistance
 - Employment programs
 
+## v0.2.0 (Phase 6)
+
+- **Data Packs**: loads defaults from `data/listings.json`, supports local JSON import/export, and fallback to in-memory defaults if fetch fails.
+- **Favorites**: star listings, persistent favorites in `localStorage`, favorites-only filter, and favorites counter.
+- **Shareable Links**: filters are encoded in URL query params and restored on load.
+- **Explain-Why Scoring**: each result includes human-readable match reasons, including relaxed-match notes.
+
 ## Run locally
 
 ```bash
 python3 -m http.server 8000
 ```
 
-Then open <http://localhost:8000>.
+Open <http://localhost:8000>.
 
-## Next-phase upgrades included
+## Manual checks
 
-- Added keyword search for matching by name/description/tags.
-- Added optional "verified only" filtering for trusted listings.
-- Added max-results selector (Top 3 / 6 / 9).
-- Added fallback recommendation mode: if exact filters return no results, the app relaxes budget/style while keeping destination and category intent.
-- Added score badges and summary messaging to improve explainability.
-- Added reset controls for faster repeated planning.
+1. Run a search and click **Copy Share Link**. Open the copied URL in another tab and verify filters auto-populate and results auto-run.
+2. Click stars on cards, refresh the page, and verify **Favorites: N** and favorites-only behavior persist.
+3. Open **Data** modal:
+   - Import a valid JSON pack and confirm results change.
+   - Import invalid JSON and confirm friendly error.
+   - Export JSON and confirm file download.
+   - Reset to default and confirm defaults restored.
 
-## Testing
+## Automated checks
 
-- JavaScript syntax check with `node --check app.js`.
-- Functional logic checks with `node test.js`.
-- Local serve verification with `curl -I http://127.0.0.1:8000/index.html`.
+- `node --check app.js`
+- `node test.js`
