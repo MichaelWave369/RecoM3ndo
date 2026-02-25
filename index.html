@@ -10,8 +10,8 @@
     <header class="hero">
       <h1>RecoM3ndo Traveler Assistant</h1>
       <p>
-        Find trusted options for dining, hotels, entertainment, contractors,
-        government assistance, and employment programs.
+        Discover trusted recommendations for dining, hotels, entertainment,
+        contractors, government assistance, and employment programs.
       </p>
     </header>
 
@@ -32,16 +32,6 @@
             </label>
 
             <label>
-              Budget Level
-              <select id="budget">
-                <option value="any">Any</option>
-                <option value="low">Low</option>
-                <option value="mid">Mid</option>
-                <option value="high">High</option>
-              </select>
-            </label>
-
-            <label>
               Need Type
               <select id="category">
                 <option value="all">All</option>
@@ -55,6 +45,16 @@
             </label>
 
             <label>
+              Budget Level
+              <select id="budget">
+                <option value="any">Any</option>
+                <option value="low">Low</option>
+                <option value="mid">Mid</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label>
               Travel Style
               <select id="style">
                 <option value="any">Any</option>
@@ -64,27 +64,62 @@
                 <option value="budget">Budget Saver</option>
               </select>
             </label>
+
+            <label>
+              Keyword Search
+              <input
+                id="keyword"
+                type="text"
+                placeholder="e.g., jobs, kid menu, shuttle"
+              />
+            </label>
+
+            <label>
+              Max Results
+              <select id="max-results">
+                <option value="3">Top 3</option>
+                <option value="6" selected>Top 6</option>
+                <option value="9">Top 9</option>
+              </select>
+            </label>
           </div>
 
-          <button type="submit">Get Recommendations</button>
+          <div class="controls">
+            <label class="checkbox-row">
+              <input id="verified-only" type="checkbox" />
+              Show only verified programs/providers
+            </label>
+
+            <div class="actions">
+              <button type="submit">Get Recommendations</button>
+              <button type="button" id="reset-btn" class="secondary">Reset</button>
+            </div>
+          </div>
         </form>
       </section>
 
       <section>
-        <h2>Recommended Results</h2>
+        <div class="section-header">
+          <h2>Recommended Results</h2>
+          <p id="result-summary" aria-live="polite"></p>
+        </div>
         <div id="results" class="cards" aria-live="polite"></div>
       </section>
     </main>
 
     <template id="card-template">
       <article class="card">
-        <h3 class="name"></h3>
+        <div class="card-top">
+          <h3 class="name"></h3>
+          <span class="score"></span>
+        </div>
         <p class="meta"></p>
         <p class="description"></p>
         <ul class="tags"></ul>
       </article>
     </template>
 
+    <script src="recommender.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

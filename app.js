@@ -1,120 +1,50 @@
-const listings = [
-  {
-    name: "Bayou Bites",
-    city: "Houston",
-    category: "dining",
-    budget: "mid",
-    styles: ["family", "budget"],
-    description: "Local cuisine and vegetarian options near downtown.",
-    tags: ["Open late", "Kid menu", "Transit nearby"]
-  },
-  {
-    name: "Capitol Stay Suites",
-    city: "Austin",
-    category: "hotels",
-    budget: "mid",
-    styles: ["business", "solo"],
-    description: "Work-friendly hotel with co-working lounge and airport shuttle.",
-    tags: ["Wi-Fi", "Breakfast", "Airport shuttle"]
-  },
-  {
-    name: "Metro Skills Employment Hub",
-    city: "Dallas",
-    category: "employment_programs",
-    budget: "low",
-    styles: ["budget", "solo"],
-    description: "Job placement, resume reviews, and free upskilling workshops.",
-    tags: ["Career coaching", "No-cost training", "Hiring events"]
-  },
-  {
-    name: "River Walk Performances",
-    city: "San Antonio",
-    category: "entertainment",
-    budget: "low",
-    styles: ["family", "solo", "budget"],
-    description: "Nightly live music and cultural performances by the river.",
-    tags: ["Live music", "Outdoor", "Accessible"]
-  },
-  {
-    name: "Lone Star Home Repair Network",
-    city: "Houston",
-    category: "contractors",
-    budget: "mid",
-    styles: ["family", "business"],
-    description: "Verified contractors for emergency home and rental repairs.",
-    tags: ["Verified licenses", "24/7 support", "Multi-language"]
-  },
-  {
-    name: "City Support Resource Center",
-    city: "Austin",
-    category: "government_assistance",
-    budget: "low",
-    styles: ["family", "budget", "solo"],
-    description: "Guidance for transit cards, food aid, and temporary housing support.",
-    tags: ["Case workers", "Walk-in help", "Document checklist"]
-  },
-  {
-    name: "Convention District Hotel",
-    city: "Dallas",
-    category: "hotels",
-    budget: "high",
-    styles: ["business"],
-    description: "Premium business lodging close to convention spaces.",
-    tags: ["Conference rooms", "Gym", "Lounge"]
-  },
-  {
-    name: "Budget Bistro Loop",
-    city: "San Antonio",
-    category: "dining",
-    budget: "low",
-    styles: ["budget", "family"],
-    description: "Affordable local meals with quick service and family seating.",
-    tags: ["Under $15", "Quick service", "Family tables"]
-  }
-];
-
 const form = document.getElementById("recommendation-form");
 const resultContainer = document.getElementById("results");
+const summary = document.getElementById("result-summary");
 const template = document.getElementById("card-template");
+const resetButton = document.getElementById("reset-btn");
 
-function scoreListing(item, filters) {
-  let score = 0;
-
-  if (item.city === filters.destination) score += 4;
-  if (filters.category === "all" || item.category === filters.category) score += 3;
-  if (filters.budget === "any" || item.budget === filters.budget) score += 2;
-  if (filters.style === "any" || item.styles.includes(filters.style)) score += 2;
-
-  return score;
+function toTitle(value) {
+  return value.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-function getRecommendations(filters) {
-  return listings
-    .map((item) => ({ ...item, score: scoreListing(item, filters) }))
-    .filter((item) => item.city === filters.destination)
-    .filter((item) => filters.category === "all" || item.category === filters.category)
-    .filter((item) => filters.budget === "any" || item.budget === filters.budget)
-    .filter((item) => filters.style === "any" || item.styles.includes(filters.style))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 6);
+function renderSummary(state) {
+  const { filters, items, relaxed } = state;
+  if (!filters.destination) {
+    summary.textContent = "Choose a destination and submit to get started.";
+    return;
+  }
+
+  if (items.length === 0) {
+    summary.textContent = `No results found in ${filters.destination}. Try another keyword or broaden filters.`;
+    return;
+  }
+
+  const mode = relaxed ? "Relaxed match" : "Exact match";
+  summary.textContent = `${mode}: showing ${items.length} recommendation(s) for ${filters.destination}.`;
 }
 
-function renderResults(items) {
+function renderResults(items, relaxed) {
   resultContainer.innerHTML = "";
 
   if (items.length === 0) {
     resultContainer.innerHTML =
-      '<p class="empty">No direct matches found. Try selecting "Any" budget or another need type.</p>';
+      '<p class="empty">No direct matches found. Try selecting "Any" budget, clearing keyword search, or switching categories.</p>';
     return;
   }
 
-  items.forEach((item) => {
+  items.forEach((item, index) => {
     const card = template.content.firstElementChild.cloneNode(true);
     card.querySelector(".name").textContent = item.name;
-    card.querySelector(".meta").textContent = `${item.city} · ${item.category.replace("_", " ")} · ${item.budget} budget`;
+    card.querySelector(".score").textContent = `${item.score} pts`;
+    card.querySelector(".meta").textContent = `${item.city} · ${toTitle(item.category)} · ${item.budget} budget${item.verified ? " · verified" : ""}`;
     card.querySelector(".description").textContent = item.description;
 
     const tagList = card.querySelector(".tags");
+    const statusTag = document.createElement("li");
+    statusTag.textContent = index === 0 ? "Top match" : relaxed ? "Alternative match" : "Recommended";
+    tagList.appendChild(statusTag);
+
     item.tags.forEach((tag) => {
       const li = document.createElement("li");
       li.textContent = tag;
@@ -125,18 +55,34 @@ function renderResults(items) {
   });
 }
 
-form.addEventListener("submit", (event) => {
-  event.preventDefault();
-
-  const filters = {
+function getFilters() {
+  return {
     destination: document.getElementById("destination").value,
     budget: document.getElementById("budget").value,
     category: document.getElementById("category").value,
-    style: document.getElementById("style").value
+    style: document.getElementById("style").value,
+    keyword: RecoM3ndo.normalize(document.getElementById("keyword").value),
+    maxResults: Number(document.getElementById("max-results").value),
+    verifiedOnly: document.getElementById("verified-only").checked
   };
+}
 
-  const matches = getRecommendations(filters);
-  renderResults(matches);
+function runSearch() {
+  const filters = getFilters();
+  const { items, relaxed } = RecoM3ndo.getRecommendations(filters);
+  renderSummary({ filters, items, relaxed });
+  renderResults(items, relaxed);
+}
+
+form.addEventListener("submit", (event) => {
+  event.preventDefault();
+  runSearch();
 });
 
-renderResults([]);
+resetButton.addEventListener("click", () => {
+  form.reset();
+  summary.textContent = "Filters reset. Select a destination and search again.";
+  resultContainer.innerHTML = "";
+});
+
+summary.textContent = "Choose a destination and submit to get started.";
