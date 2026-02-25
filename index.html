@@ -3,15 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RecoM3ndo Traveler Companion v0.3.0</title>
+    <title>RecoM3ndo Traveler Companion v0.4.0</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="manifest" href="manifest.webmanifest" />
   </head>
   <body>
     <div id="offline-banner" class="offline-banner" role="status" aria-live="polite" hidden>You are offline. Using cached data.</div>
     <header class="hero">
-      <h1>RecoM3ndo Traveler Assistant</h1>
-      <p>Phase 9 (v0.3.0): Traveler Companion Mode (PWA + Offline-first + Location-aware + Details).</p>
+      <h1>RecoM3ndo Traveler Companion</h1>
+      <p>v0.4.0: Creator Mode + Upgrade Guard</p>
+      <div class="hero-actions">
+        <button id="creator-mode-btn" type="button" class="secondary">Enable Creator Mode</button>
+        <button id="diagnostics-btn" type="button" class="secondary">Diagnostics</button>
+        <button id="assistant-btn" type="button" class="secondary">Assistant</button>
+      </div>
       <p id="install-hint" class="install-hint"></p>
     </header>
 
@@ -31,7 +36,8 @@
           <div class="grid">
             <label>Destination
               <select id="destination" required>
-                <option value="">Choose a city</option><option>Houston</option><option>Austin</option><option>Dallas</option><option>San Antonio</option>
+                <option value="">Choose a city</option>
+                <option>Houston</option><option>Austin</option><option>Dallas</option><option>San Antonio</option>
               </select>
             </label>
             <label>Need Type
@@ -65,6 +71,34 @@
         </form>
       </section>
 
+      <section id="creator-panel" class="search-panel" hidden>
+        <h2>Manage Listings</h2>
+        <p id="creator-message" class="muted"></p>
+        <form id="creator-form" class="grid">
+          <input id="creator-id" placeholder="id (required)" />
+          <input id="creator-name" placeholder="name" />
+          <input id="creator-city" placeholder="city" />
+          <input id="creator-category" placeholder="category" />
+          <select id="creator-budget"><option value="low">low</option><option value="mid" selected>mid</option><option value="high">high</option></select>
+          <select id="creator-style"><option value="family">family</option><option value="solo">solo</option><option value="business">business</option><option value="budget">budget</option><option value="any">any</option></select>
+          <input id="creator-description" placeholder="description" />
+          <input id="creator-tags" placeholder="tags comma-separated" />
+          <label class="checkbox-row"><input id="creator-verified" type="checkbox" />verified</label>
+          <input id="creator-address" placeholder="address (optional)" />
+          <input id="creator-phone" placeholder="phone (optional)" />
+          <input id="creator-url" placeholder="url (optional)" />
+          <input id="creator-lat" placeholder="lat (optional)" />
+          <input id="creator-lng" placeholder="lng (optional)" />
+        </form>
+        <div class="actions">
+          <button type="button" id="creator-add-btn">Add Listing</button>
+          <button type="button" id="creator-update-btn" class="secondary">Edit Listing</button>
+          <button type="button" id="creator-delete-btn" class="secondary">Delete Listing</button>
+        </div>
+        <h3>Duplicate Detector</h3>
+        <ul id="duplicate-list"></ul>
+      </section>
+
       <section>
         <div class="section-header">
           <h2>Recommended Results</h2>
@@ -78,7 +112,6 @@
     <dialog id="data-modal" class="modal" aria-label="Data pack manager">
       <form method="dialog" class="modal-content">
         <h3>Data Pack Manager</h3>
-        <p>Import/export listing packs (schema v1).</p>
         <label>Import JSON<input id="import-pack-input" type="file" accept="application/json" /></label>
         <p id="data-message" class="modal-message" aria-live="polite"></p>
         <div class="actions">
@@ -88,6 +121,56 @@
         </div>
       </form>
     </dialog>
+
+    <dialog id="diagnostics-modal" class="modal" aria-label="Diagnostics">
+      <form method="dialog" class="modal-content">
+        <h3>Diagnostics</h3>
+        <div id="diagnostics-content"></div>
+        <div class="actions">
+          <button id="download-data-btn" type="button">Download My Data</button>
+          <button id="clear-local-data-btn" type="button" class="secondary">Clear All Local Data</button>
+          <button type="submit" class="secondary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+
+    <aside id="assistant-drawer" class="assistant-drawer" aria-label="AI assistant panel" hidden>
+      <div class="assistant-header">
+        <h3>RecoM3ndo AI Companion</h3>
+        <button id="assistant-close-btn" type="button" class="secondary">Close</button>
+      </div>
+      <div id="assistant-history" class="assistant-history" aria-live="polite"></div>
+      <div class="assistant-quick-actions">
+        <button id="qa-recommend-form" type="button" class="secondary">Recommend from my form</button>
+        <button id="qa-explain-result" type="button" class="secondary">Explain this result</button>
+        <button id="qa-itinerary" type="button" class="secondary">Build a 3/6/9 itinerary</button>
+        <button id="qa-verified" type="button" class="secondary">Find verified only</button>
+      </div>
+      <div class="assistant-compose">
+        <input id="assistant-input" placeholder="Ask the assistant..." />
+        <button id="assistant-send-btn" type="button">Send</button>
+      </div>
+      <details class="assistant-settings" open>
+        <summary>Assistant Settings</summary>
+        <label>Provider
+          <select id="assistant-provider">
+            <option value="ollama">Ollama (local)</option>
+            <option value="openai">OpenAI-Compatible</option>
+          </select>
+        </label>
+        <label>Ollama model<input id="assistant-ollama-model" value="llama3.1" /></label>
+        <label>Base URL (OpenAI-compatible)<input id="assistant-base-url" placeholder="https://your-endpoint/v1" /></label>
+        <label>Model (OpenAI-compatible)<input id="assistant-openai-model" placeholder="gpt-4o-mini" /></label>
+        <label>API Key (stored locally)<input id="assistant-api-key" type="password" /></label>
+        <label class="checkbox-row"><input id="assistant-privacy-mode" type="checkbox" checked />Privacy Mode</label>
+        <p class="muted">Warning: endpoint credentials are stored locally in your browser.</p>
+      </details>
+      <div class="actions">
+        <button id="assistant-clear-btn" type="button" class="secondary">Clear Chat</button>
+        <button id="assistant-export-btn" type="button" class="secondary">Export Chat JSON</button>
+      </div>
+    </aside>
 
     <div id="toast" class="toast" role="status" aria-live="assertive"></div>
 
@@ -109,6 +192,9 @@
     </template>
 
     <script src="recommender.js"></script>
+    <script src="tools.js"></script>
+    <script src="llm.js"></script>
+    <script src="assistant.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
