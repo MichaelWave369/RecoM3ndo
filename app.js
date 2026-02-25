@@ -28,8 +28,7 @@ function renderResults(items, relaxed) {
   resultContainer.innerHTML = "";
 
   if (items.length === 0) {
-    resultContainer.innerHTML =
-      '<p class="empty">No direct matches found. Try selecting "Any" budget, clearing keyword search, or switching categories.</p>';
+    resultContainer.innerHTML = `<p class="empty">No direct matches found. Try selecting "Any" budget, clearing keyword search, or switching categories.</p>`;
     return;
   }
 
