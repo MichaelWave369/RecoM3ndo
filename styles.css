@@ -62,3 +62,24 @@ button.secondary { background:#dfe7f9; color:#1c3164; }
 @media (max-width: 900px) {
   #map { height: 320px; }
 }
+
+.deals-settings {
+  display: grid;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
+}
+
+.deal-setting-row,
+.saved-item {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  align-items: center;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid #eef2f9;
+}
+
+.saved-item p {
+  width: 100%;
+  margin: 0.25rem 0;
+}

@@ -2,6 +2,10 @@ const assert = require("assert");
 const { getRecommendations, normalize, validateListingPack, haversineMiles, parseRouteState, DEFAULT_LISTINGS } = require("./recommender.js");
 const { parseToolCall, searchListings, buildItinerary, buildContext, showOnMap } = require("./tools.js");
 const { mapUrlForListing, validateCoordinate, applyShowOnMapState } = require("./geo.js");
+const deep = require("./deals/deeplinks.js");
+const providers = require("./deals/providers/index.js");
+const { createStore } = require("./deals/saved-searches.js");
+const { buildFreePlan } = require("./free-finder/guide.js");
 
 const exact = getRecommendations({ destination: "Houston", category: "dining", budget: "mid", style: "family", keyword: "kid", verifiedOnly: false, maxResults: 6 });
 assert.equal(exact.relaxed, false);
@@ -67,6 +71,28 @@ assert.equal(mapState.showMode, "favorites");
 assert.equal(mapState.selectedId, "hou-workstart-center");
 const mapState2 = showOnMap({ showMode: "results" }, { scope: "city" });
 assert.equal(mapState2.showMode, "city");
+
+
+
+const expedia = providers.find((p) => p.id === "expedia");
+const google = providers.find((p) => p.id === "google");
+const hotelLink = deep.buildHotelLinks(expedia, { destination: "Houston", checkIn: "2026-03-01", checkOut: "2026-03-03", adults: 2 }, { affiliateId: "abc" });
+assert.ok(hotelLink.includes("expedia.com") && hotelLink.includes("Houston"));
+const flightLink = deep.buildFlightLinks(google, { origin: "IAH", destination: "AUS", departDate: "2026-03-01", returnDate: "2026-03-03" });
+assert.ok(flightLink.includes("google.com/travel/flights"));
+
+const dealsStore = createStore();
+const saved = dealsStore.add({ name: "Test", providerId: "expedia", vertical: "hotels", params: { destination: "Austin" } });
+assert.ok(saved.id);
+assert.equal(dealsStore.list().length, 1);
+assert.equal(dealsStore.get(saved.id).name, "Test");
+dealsStore.remove(saved.id);
+assert.equal(dealsStore.list().length, 0);
+
+const freePlan = buildFreePlan({ destination: "Houston", needs: ["wifi", "food"], budget: "low" });
+assert.equal(freePlan.destination, "Houston");
+assert.ok(Array.isArray(freePlan.steps) && freePlan.steps.length >= 2);
+assert.ok(freePlan.steps[0].checklist.length >= 1);
 
 assert.equal(normalize("  SHUTTLE "), "shuttle");
 console.log("All tests passed");

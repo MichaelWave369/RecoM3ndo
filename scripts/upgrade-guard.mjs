@@ -59,7 +59,7 @@ async function runtimeChecks() {
 }
 
 async function run() {
-  const baselineFiles = ["index.html", "app.js", "recommender.js", "styles.css", "test.js", "README.md", "tools.js", "assistant.js", "llm.js", "map.js", "geo.js"];
+  const baselineFiles = ["index.html", "app.js", "recommender.js", "styles.css", "test.js", "README.md", "tools.js", "assistant.js", "llm.js", "map.js", "geo.js", "deals/deeplinks.js", "deals/providers/index.js", "free-finder/guide.js", "free-finder/notes.js"];
   baselineFiles.forEach((file) => addCheck(`File exists: ${file}`, fileExists(file)));
 
   const html = await fsp.readFile(path.join(ROOT, "index.html"), "utf8");
@@ -97,6 +97,11 @@ async function run() {
   addCheck("Map provider toggle exists", /id=["\']map-provider["\']/.test(html));
   addCheck("Google key field exists", /id=["\']google-maps-key["\']/.test(html));
   addCheck("Leaflet assets included", /leaflet@1\.9\.4/.test(html));
+  addCheck("Deals nav exists", /id=["\']deals-nav-btn["\']/.test(html));
+  addCheck("Deals view exists", /id=["\']deals-view["\']/.test(html));
+  addCheck("Free Finder nav exists", /id=["\']free-finder-nav-btn["\']/.test(html));
+  addCheck("Free Finder view exists", /id=["\']free-finder-view["\']/.test(html));
+  addCheck("Integrations registry marker exists", /integrations-registry-marker/.test(html));
 
   addCheck("Recommender API exposes getRecommendations", /getRecommendations/.test(recommender));
   addCheck("Recommender exported via module.exports", /module\.exports/.test(recommender));
@@ -105,9 +110,10 @@ async function run() {
   addCheck("app.js uses localStorage favorites", /localStorage/.test(appJs) && /favorites/.test(appJs));
   addCheck("app.js uses geolocation", /navigator\.geolocation/.test(appJs));
   addCheck("Tool protocol parser present", /parseToolCall/.test(assistantJs) || /JSON\.parse/.test(appJs));
-  addCheck("Assistant tool names present", /(searchListings|recommend|getListingById|setForm|openListing|buildItinerary)/.test(appJs + toolsJs));
+  addCheck("Assistant tool names present", /(searchListings|recommend|getListingById|setForm|openListing|buildItinerary|openDeals|buildFreePlan)/.test(appJs + toolsJs));
   addCheck("Assistant provider wiring present", /assistant-provider/.test(html) && /assistantProvider|assistant-provider/.test(appJs));
   addCheck("Map init wiring present", /RecoMap|map-provider|refreshMapMarkers/.test(appJs));
+  addCheck("Deals provider registry present", /RecoDealProviders|deals\/providers/.test(html + appJs));
 
   await runtimeChecks();
 

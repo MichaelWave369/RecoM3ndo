@@ -8,7 +8,7 @@
     currentResult,
     history
   }) {
-    const toolNames = ["searchListings", "recommend", "getListingById", "setForm", "openListing", "buildItinerary", "showOnMap", "navigateTo"];
+    const toolNames = ["searchListings", "recommend", "getListingById", "setForm", "openListing", "buildItinerary", "showOnMap", "navigateTo", "openDeals", "saveDealSearch", "listDealSearches", "buildFreePlan", "addResourceNote", "listResourceNotes"];
     const context = globalScope.RecoTools.buildContext({ listings, query: userMessage, privacyMode: settings.privacyMode });
 
     const system = [

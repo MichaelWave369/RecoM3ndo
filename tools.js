@@ -189,6 +189,34 @@
     return { ok: true, id: listing.id, url: globalScope.RecoGeo.mapUrlForListing(listing, userLoc) };
   }
 
+
+  function openDeals(providers, { providerId, vertical, params = {}, tracking = {} }) {
+    const provider = providers.find((p) => p.id === providerId);
+    if (!provider) return { ok: false, error: "Provider not found" };
+    const url = provider.buildLink({ ...params, vertical }, tracking);
+    return { ok: true, providerId, vertical, url };
+  }
+
+  function saveDealSearch(store, payload) {
+    return store.add(payload);
+  }
+
+  function listDealSearches(store) {
+    return store.list();
+  }
+
+  function addResourceNote(store, payload) {
+    return store.add(payload);
+  }
+
+  function listResourceNotes(store, filter = {}) {
+    return store.list(filter);
+  }
+
+  function buildFreePlan(args) {
+    return (globalScope.RecoFreeFinder || {}).buildFreePlan ? globalScope.RecoFreeFinder.buildFreePlan(args) : { destination: args.destination || "any", steps: [] };
+  }
+
   const api = {
     searchListings,
     recommend,
@@ -198,7 +226,13 @@
     parseToolCall,
     localRulesAssistant,
     showOnMap,
-    navigateTo
+    navigateTo,
+    openDeals,
+    saveDealSearch,
+    listDealSearches,
+    buildFreePlan,
+    addResourceNote,
+    listResourceNotes
   };
 
   if (typeof module !== "undefined" && module.exports) {

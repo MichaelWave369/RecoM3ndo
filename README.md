@@ -1,17 +1,38 @@
 # RecoM3ndo Traveler Companion
 
-RecoM3ndo is a framework-free traveler companion app for dining, hotels, entertainment, contractors, government support, and employment programs.
+RecoM3ndo is a local-first, framework-free traveler companion app for recommendations, map exploration, assistant workflows, deals link-outs, and resource planning.
 
-## v0.7.0 Highlights
+## v0.8.0 Highlights — Deals Hub + Free Finder
 
-- **Map View + Directions** with provider toggle:
-  - Default: **Leaflet + OpenStreetMap** (no key)
-  - Optional: **Google Maps** (BYO API key)
-- Marker interactions: marker click selects/highlights card, card click focuses marker.
-- Map filters: show Results / Favorites / All in City and center by User / Top Result / City.
-- Creator Mode helper: **Pick on map** to fill lat/lng, with coordinate validation.
-- Assistant tools extended with `showOnMap` and `navigateTo`.
-- Upgrade Guard extended to verify map + assistant + prior phase wiring.
+- **Deals Hub** with tabs for Hotels / Flights / Cars / Things to do.
+- Provider adapters for:
+  - Priceline (deeplink + partner-gated API placeholder)
+  - Expedia (deeplink)
+  - Booking.com (deeplink)
+  - Skyscanner (deeplink)
+  - Google Travel/Search (deeplink)
+- **No scraping**: only official deep links (and optional proxy-mode API interface for partner integrations).
+- Per-provider settings (enabled + affiliateId), stored locally.
+- Saved deal searches (run/delete), persisted locally.
+- **Free Finder** curated categories for free internet, food, coupons, events, essentials, and assistance.
+- Resource notes with local save + export/import JSON.
+- Assistant tools extended for deals and free-plan helpers.
+
+## Map View + Directions
+
+- Header **Map** button opens map panel.
+- Default map provider: **Leaflet + OSM** (no API key required).
+- Optional map provider: **Google Maps** with user-provided API key.
+- Marker selection syncs with cards.
+- Directions button opens maps deep links for selected/top listing.
+
+## Security & integration notes
+
+- Do not store partner API secrets in static client code.
+- For partner-gated APIs, use **proxy mode**: app sends params to your proxy endpoint, proxy handles secrets and returns normalized offers.
+- For Google Maps key, apply:
+  - HTTP referrer restrictions
+  - API restrictions (Maps JavaScript API and only required APIs)
 
 ## Run locally
 
@@ -27,58 +48,38 @@ Open <http://localhost:8000>.
 npm run verify
 ```
 
-This runs:
+Runs:
 - `npm run check` (`node --check app.js`)
 - `npm run test` (`node test.js`)
 - `npm run guard` (`node scripts/upgrade-guard.mjs`)
 
-The guard prints PASS/FAIL checks and writes `upgrade-guard-report.json`.
-
-## Map View usage
-
-1. Click **Map** in header.
-2. Select provider (`Leaflet + OSM` by default).
-3. Choose Show mode (Results/Favorites/City) and Center mode.
-4. Use **Directions to selected** to open maps deep-link.
-
-### Google Maps option
-
-1. Choose provider: **Google Maps**.
-2. Enter API key in map panel.
-3. Keep key restricted:
-   - HTTP referrer restrictions (your domain/localhost)
-   - API restrictions (Maps JavaScript API only, plus any route services you explicitly use)
+Upgrade Guard outputs PASS/FAIL checklist and writes `upgrade-guard-report.json`.
 
 ## Assistant usage
 
-1. Click **Assistant** in header.
-2. Ask naturally, e.g.:
-   - “Find verified family-friendly stuff in Houston under mid budget.”
-   - “Show results on map.”
-   - “Navigate to top pick.”
-3. Configure provider settings in drawer.
+Use **Assistant** and ask prompts like:
+- “Find verified family-friendly options in Houston under mid budget.”
+- “Show results on map.”
+- “Find hotel deals.”
+- “Build a free plan for wifi and food in Dallas.”
 
-## Ollama setup (local)
+Assistant can run local tools only; it does not invent listings.
 
-1. Install and run Ollama.
-2. Ensure endpoint is reachable at `http://localhost:11434`.
-3. Use model like `llama3.1`.
+## Ollama / OpenAI-compatible
 
-## OpenAI-compatible setup
-
-1. Switch provider to OpenAI-Compatible.
-2. Fill base URL, model, and API key.
-3. Credentials are stored locally in browser storage.
+- Default provider: Ollama (`http://localhost:11434`) with model `llama3.1`.
+- Optional OpenAI-compatible endpoint with BYO base URL/model/key.
+- Provider settings are stored in browser localStorage.
 
 ## Privacy Mode
 
-- ON by default for assistant context redaction.
-- With Privacy Mode ON, assistant context excludes sensitive fields and exact user coordinates.
-- Map UI still works locally on-device.
+- ON by default for assistant context minimization.
+- Assistant context excludes sensitive fields and exact user coords when enabled.
+- Map rendering remains local UI behavior.
 
 ## Troubleshooting
 
-- If Google Maps fails to load, app falls back to Leaflet.
+- If Google Maps fails, switch provider to Leaflet.
 - If model calls fail, assistant uses local tool-only fallback.
-- If stale assets appear after updates, clear site data and refresh (service worker cache).
-- Run `npm run guard` to verify installation and wiring.
+- If stale behavior appears, clear site data and refresh.
+- Run `npm run guard` to confirm hooks/files/wiring are installed.
