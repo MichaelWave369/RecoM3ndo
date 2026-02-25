@@ -3,18 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>RecoM3ndo Traveler Companion v0.4.0</title>
+    <title>RecoM3ndo Traveler Companion v0.7.0</title>
     <link rel="stylesheet" href="styles.css" />
     <link rel="manifest" href="manifest.webmanifest" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+      crossorigin=""
+    />
   </head>
   <body>
     <div id="offline-banner" class="offline-banner" role="status" aria-live="polite" hidden>You are offline. Using cached data.</div>
     <header class="hero">
       <h1>RecoM3ndo Traveler Companion</h1>
-      <p>v0.4.0: Creator Mode + Upgrade Guard</p>
+      <p>v0.7.0: Map View + Directions</p>
       <div class="hero-actions">
         <button id="creator-mode-btn" type="button" class="secondary">Enable Creator Mode</button>
         <button id="diagnostics-btn" type="button" class="secondary">Diagnostics</button>
+        <button id="map-view-btn" type="button" class="secondary">Map</button>
         <button id="assistant-btn" type="button" class="secondary">Assistant</button>
       </div>
       <p id="install-hint" class="install-hint"></p>
@@ -94,9 +101,43 @@
           <button type="button" id="creator-add-btn">Add Listing</button>
           <button type="button" id="creator-update-btn" class="secondary">Edit Listing</button>
           <button type="button" id="creator-delete-btn" class="secondary">Delete Listing</button>
+          <button type="button" id="pick-on-map-btn" class="secondary">Pick on map</button>
         </div>
         <h3>Duplicate Detector</h3>
         <ul id="duplicate-list"></ul>
+      </section>
+
+      <section id="map-panel" class="search-panel" hidden>
+        <div class="toolbar">
+          <h2>Map View</h2>
+          <div class="toolbar-actions">
+            <label>Provider
+              <select id="map-provider">
+                <option value="leaflet">Leaflet + OSM</option>
+                <option value="google">Google Maps</option>
+              </select>
+            </label>
+            <input id="google-maps-key" placeholder="Google Maps API key (optional)" />
+          </div>
+        </div>
+        <div class="map-controls">
+          <label>Show
+            <select id="map-show-mode">
+              <option value="results">Results</option>
+              <option value="favorites">Favorites</option>
+              <option value="city">All in City</option>
+            </select>
+          </label>
+          <label>Center
+            <select id="map-center-mode">
+              <option value="top">Top Result</option>
+              <option value="user">User</option>
+              <option value="city">City</option>
+            </select>
+          </label>
+          <button id="directions-btn" type="button" class="secondary">Directions to selected</button>
+        </div>
+        <div id="map"></div>
       </section>
 
       <section>
@@ -134,7 +175,6 @@
       </form>
     </dialog>
 
-
     <aside id="assistant-drawer" class="assistant-drawer" aria-label="AI assistant panel" hidden>
       <div class="assistant-header">
         <h3>RecoM3ndo AI Companion</h3>
@@ -146,6 +186,8 @@
         <button id="qa-explain-result" type="button" class="secondary">Explain this result</button>
         <button id="qa-itinerary" type="button" class="secondary">Build a 3/6/9 itinerary</button>
         <button id="qa-verified" type="button" class="secondary">Find verified only</button>
+        <button id="qa-show-map" type="button" class="secondary">Show results on map</button>
+        <button id="qa-navigate-top" type="button" class="secondary">Navigate to top pick</button>
       </div>
       <div class="assistant-compose">
         <input id="assistant-input" placeholder="Ask the assistant..." />
@@ -191,8 +233,11 @@
       </article>
     </template>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
     <script src="recommender.js"></script>
+    <script src="geo.js"></script>
     <script src="tools.js"></script>
+    <script src="map.js"></script>
     <script src="llm.js"></script>
     <script src="assistant.js"></script>
     <script src="app.js"></script>

@@ -1,6 +1,6 @@
 {
   "name": "recom3ndo",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "private": true,
   "scripts": {
     "check": "node --check app.js",

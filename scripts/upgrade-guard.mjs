@@ -59,7 +59,7 @@ async function runtimeChecks() {
 }
 
 async function run() {
-  const baselineFiles = ["index.html", "app.js", "recommender.js", "styles.css", "test.js", "README.md", "tools.js", "assistant.js", "llm.js"];
+  const baselineFiles = ["index.html", "app.js", "recommender.js", "styles.css", "test.js", "README.md", "tools.js", "assistant.js", "llm.js", "map.js", "geo.js"];
   baselineFiles.forEach((file) => addCheck(`File exists: ${file}`, fileExists(file)));
 
   const html = await fsp.readFile(path.join(ROOT, "index.html"), "utf8");
@@ -91,7 +91,12 @@ async function run() {
   addCheck("Feature hook: Why this match", /Why this match\?/i.test(html));
   addCheck("Assistant UI trigger exists", /id=["']assistant-btn["']/.test(html));
   addCheck("Assistant drawer marker exists", /id=["']assistant-drawer["']/.test(html));
-  addCheck("Assistant settings provider select exists", /id=["']assistant-provider["']/.test(html));
+  addCheck("Assistant settings provider select exists", /id=["\']assistant-provider["\']/.test(html));
+  addCheck("Map UI trigger exists", /id=["\']map-view-btn["\']/.test(html));
+  addCheck("Map container exists", /id=["\']map["\']/.test(html));
+  addCheck("Map provider toggle exists", /id=["\']map-provider["\']/.test(html));
+  addCheck("Google key field exists", /id=["\']google-maps-key["\']/.test(html));
+  addCheck("Leaflet assets included", /leaflet@1\.9\.4/.test(html));
 
   addCheck("Recommender API exposes getRecommendations", /getRecommendations/.test(recommender));
   addCheck("Recommender exported via module.exports", /module\.exports/.test(recommender));
@@ -101,7 +106,8 @@ async function run() {
   addCheck("app.js uses geolocation", /navigator\.geolocation/.test(appJs));
   addCheck("Tool protocol parser present", /parseToolCall/.test(assistantJs) || /JSON\.parse/.test(appJs));
   addCheck("Assistant tool names present", /(searchListings|recommend|getListingById|setForm|openListing|buildItinerary)/.test(appJs + toolsJs));
-  addCheck("Assistant provider wiring present", /assistant-provider/.test(html) && /assistantProvider/.test(appJs));
+  addCheck("Assistant provider wiring present", /assistant-provider/.test(html) && /assistantProvider|assistant-provider/.test(appJs));
+  addCheck("Map init wiring present", /RecoMap|map-provider|refreshMapMarkers/.test(appJs));
 
   await runtimeChecks();
 

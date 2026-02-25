@@ -1,29 +1,14 @@
 const assert = require("assert");
 const { getRecommendations, normalize, validateListingPack, haversineMiles, parseRouteState, DEFAULT_LISTINGS } = require("./recommender.js");
-const { parseToolCall, searchListings, buildItinerary, buildContext } = require("./tools.js");
+const { parseToolCall, searchListings, buildItinerary, buildContext, showOnMap } = require("./tools.js");
+const { mapUrlForListing, validateCoordinate, applyShowOnMapState } = require("./geo.js");
 
-const exact = getRecommendations({
-  destination: "Houston",
-  category: "dining",
-  budget: "mid",
-  style: "family",
-  keyword: "kid",
-  verifiedOnly: false,
-  maxResults: 6
-});
+const exact = getRecommendations({ destination: "Houston", category: "dining", budget: "mid", style: "family", keyword: "kid", verifiedOnly: false, maxResults: 6 });
 assert.equal(exact.relaxed, false);
 assert.ok(exact.items.length >= 1);
 assert.equal(exact.items[0].name, "Bayou Bites");
 
-const relaxed = getRecommendations({
-  destination: "Houston",
-  category: "employment_programs",
-  budget: "high",
-  style: "family",
-  keyword: "",
-  verifiedOnly: true,
-  maxResults: 6
-});
+const relaxed = getRecommendations({ destination: "Houston", category: "employment_programs", budget: "high", style: "family", keyword: "", verifiedOnly: true, maxResults: 6 });
 assert.equal(relaxed.relaxed, true);
 assert.ok(relaxed.items.some((item) => item.name === "WorkStart Center"));
 
@@ -31,9 +16,7 @@ const explanation = exact.items[0].explanation.join(" ").toLowerCase();
 assert.ok(explanation.includes("city matched"));
 assert.ok(explanation.includes("keyword matched"));
 
-const invalidPack = [{
-  id: "x1", name: "Bad Item", city: "Houston", category: "dining", budget: "wrong", style: "family", description: "Invalid budget", tags: ["tag"], verified: true
-}];
+const invalidPack = [{ id: "x1", name: "Bad Item", city: "Houston", category: "dining", budget: "wrong", style: "family", description: "Invalid budget", tags: ["tag"], verified: true }];
 const validation = validateListingPack(invalidPack);
 assert.equal(validation.valid, false);
 assert.ok(validation.errors[0].includes("budget"));
@@ -70,6 +53,20 @@ assert.ok(contextPrivate.length >= 1);
 assert.equal(contextPrivate[0].address, undefined);
 const contextOpen = buildContext({ listings: DEFAULT_LISTINGS, query: "hotel", privacyMode: false });
 assert.ok("address" in contextOpen[0] || "phone" in contextOpen[0] || "url" in contextOpen[0]);
+
+const listingWithCoords = { id: "x", name: "Place", city: "Houston", lat: 29.7, lng: -95.3 };
+assert.ok(mapUrlForListing(listingWithCoords).includes("29.7,-95.3"));
+const listingWithAddress = { id: "y", name: "Addr", city: "Austin", address: "100 Main St Austin" };
+assert.ok(mapUrlForListing(listingWithAddress).includes("100%20Main%20St%20Austin"));
+
+assert.equal(validateCoordinate("29.7", "lat").valid, true);
+assert.equal(validateCoordinate("-190", "lng").valid, false);
+
+const mapState = applyShowOnMapState({ showMode: "results", selectedId: null }, { scope: "favorites", selectedId: "hou-workstart-center" });
+assert.equal(mapState.showMode, "favorites");
+assert.equal(mapState.selectedId, "hou-workstart-center");
+const mapState2 = showOnMap({ showMode: "results" }, { scope: "city" });
+assert.equal(mapState2.showMode, "city");
 
 assert.equal(normalize("  SHUTTLE "), "shuttle");
 console.log("All tests passed");

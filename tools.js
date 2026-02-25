@@ -178,6 +178,17 @@
     return null;
   }
 
+
+  function showOnMap(currentMapState, args = {}) {
+    return globalScope.RecoGeo.applyShowOnMapState(currentMapState || {}, args);
+  }
+
+  function navigateTo(listings, args = {}, userLoc = null) {
+    const listing = listings.find((item) => item.id === args.id);
+    if (!listing) return { ok: false, error: "Listing not found" };
+    return { ok: true, id: listing.id, url: globalScope.RecoGeo.mapUrlForListing(listing, userLoc) };
+  }
+
   const api = {
     searchListings,
     recommend,
@@ -185,7 +196,9 @@
     buildItinerary,
     buildContext,
     parseToolCall,
-    localRulesAssistant
+    localRulesAssistant,
+    showOnMap,
+    navigateTo
   };
 
   if (typeof module !== "undefined" && module.exports) {
