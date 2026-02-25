@@ -17,14 +17,26 @@ const exportPackButton = document.getElementById("export-pack-btn");
 const resetPackButton = document.getElementById("reset-pack-btn");
 const dataMessage = document.getElementById("data-message");
 const toast = document.getElementById("toast");
+const offlineBanner = document.getElementById("offline-banner");
+const useLocationButton = document.getElementById("use-location-btn");
+const sortMode = document.getElementById("sort-mode");
+const detailView = document.getElementById("detail-view");
+const installHint = document.getElementById("install-hint");
 
 let activeListings = [...RecoM3ndo.DEFAULT_LISTINGS];
 let favorites = loadFavorites();
+let userLocation = null;
+let currentItems = [];
+
+function registerServiceWorker() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("/service-worker.js").catch(() => null);
+}
 
 function showToast(message) {
   toast.textContent = message;
   toast.classList.add("visible");
-  setTimeout(() => toast.classList.remove("visible"), 1600);
+  setTimeout(() => toast.classList.remove("visible"), 1800);
 }
 
 function loadFavorites() {
@@ -68,33 +80,75 @@ function setQueryFromFilters(filters) {
   params.set("max", String(filters.maxResults));
   if (filters.verifiedOnly) params.set("verifiedOnly", "1");
   if (filters.favoritesOnly) params.set("favoritesOnly", "1");
-
-  const url = `${window.location.pathname}?${params.toString()}`;
-  window.history.replaceState({}, "", url);
+  window.history.replaceState({}, "", `${window.location.pathname}?${params.toString()}`);
 }
 
-function applyQueryToForm() {
-  const params = new URLSearchParams(window.location.search);
-  const get = (k) => params.get(k);
+function openDetailById(id) {
+  const listing = activeListings.find((item) => item.id === id) || currentItems.find((item) => item.id === id);
+  if (!listing) return;
 
-  const fieldMap = {
-    destination: "destination",
-    category: "category",
-    budget: "budget",
-    style: "style",
-    keyword: "keyword"
-  };
+  const actions = [];
+  if (listing.address || (typeof listing.lat === "number" && typeof listing.lng === "number")) {
+    const mapsUrl = listing.address
+      ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(listing.address)}`
+      : `https://www.google.com/maps/search/?api=1&query=${listing.lat},${listing.lng}`;
+    actions.push(`<a class="action-link" href="${mapsUrl}" target="_blank" rel="noopener">Open in Maps</a>`);
+  }
+  if (listing.phone) actions.push(`<a class="action-link" href="tel:${listing.phone}">Call</a>`);
+  if (listing.url) actions.push(`<a class="action-link" href="${listing.url}" target="_blank" rel="noopener">Website</a>`);
 
-  Object.entries(fieldMap).forEach(([queryKey, elementId]) => {
-    const value = get(queryKey);
-    if (value !== null) document.getElementById(elementId).value = value;
+  detailView.innerHTML = `
+    <article class="detail-card">
+      <button id="back-to-results" class="secondary" type="button">Back to results</button>
+      <h2>${listing.name}</h2>
+      <p class="meta">${listing.city} · ${toTitle(listing.category)} · ${listing.budget} budget${listing.verified ? " · verified" : ""}</p>
+      <p>${listing.description}</p>
+      <p>${listing.address || "Address unavailable"}</p>
+      <p>${listing.phone || "Phone unavailable"}</p>
+      <div class="actions">${actions.join("")}</div>
+      <ul>${(listing.tags || []).map((tag) => `<li>${tag}</li>`).join("")}</ul>
+    </article>
+  `;
+  detailView.hidden = false;
+  resultContainer.hidden = true;
+  summary.hidden = true;
+  document.getElementById("back-to-results").addEventListener("click", () => {
+    detailView.hidden = true;
+    resultContainer.hidden = false;
+    summary.hidden = false;
+    const parsed = RecoM3ndo.parseRouteState(window.location.search);
+    setQueryFromFilters({ ...parsed.filters, favoriteIds: favorites });
   });
+}
 
-  if (get("max")) document.getElementById("max-results").value = get("max");
-  document.getElementById("verified-only").checked = get("verifiedOnly") === "1";
-  document.getElementById("favorites-only").checked = get("favoritesOnly") === "1";
+function applySort(items) {
+  const mode = sortMode.value;
+  const next = [...items];
+  if (mode === "verified") {
+    next.sort((a, b) => Number(b.verified) - Number(a.verified) || b.score - a.score);
+    return next;
+  }
 
-  return params.toString().length > 0;
+  if (mode === "nearest" && userLocation) {
+    next.sort((a, b) => {
+      const da = typeof a.distanceMiles === "number" ? a.distanceMiles : Number.POSITIVE_INFINITY;
+      const db = typeof b.distanceMiles === "number" ? b.distanceMiles : Number.POSITIVE_INFINITY;
+      return da - db || b.score - a.score;
+    });
+    return next;
+  }
+
+  return next;
+}
+
+function enrichWithDistance(items) {
+  return items.map((item) => {
+    if (userLocation && typeof item.lat === "number" && typeof item.lng === "number") {
+      const distanceMiles = RecoM3ndo.haversineMiles(userLocation, { lat: item.lat, lng: item.lng });
+      return { ...item, distanceMiles };
+    }
+    return item;
+  });
 }
 
 function renderSummary(filters, items, relaxed) {
@@ -102,62 +156,76 @@ function renderSummary(filters, items, relaxed) {
     summary.textContent = "Choose a destination and submit to get started.";
     return;
   }
-
   if (filters.favoritesOnly && favorites.size === 0) {
-    summary.textContent = "Favorites-only is enabled, but you have no favorites yet. Star a few listings first.";
+    summary.textContent = "Favorites-only enabled, but no favorites exist yet.";
     return;
   }
-
   if (items.length === 0) {
-    summary.textContent = `No results found in ${filters.destination}. Try another keyword or broaden filters.`;
+    summary.textContent = `No results found in ${filters.destination}.`;
     return;
   }
-
-  summary.textContent = `${relaxed ? "Relaxed" : "Exact"} match: showing ${items.length} recommendation(s) for ${filters.destination}.`;
+  summary.textContent = `${relaxed ? "Relaxed" : "Exact"} match: ${items.length} result(s) for ${filters.destination}.`;
 }
 
 function renderResults(items, relaxed, filters) {
   resultContainer.innerHTML = "";
+  detailView.hidden = true;
+  resultContainer.hidden = false;
+  summary.hidden = false;
 
   if (filters.favoritesOnly && favorites.size === 0) {
-    resultContainer.innerHTML = `<p class="empty">You turned on Favorites-only, but no favorites exist yet. Click ☆ on any card to save one.</p>`;
+    resultContainer.innerHTML = `<p class="empty">Favorites-only is on but no favorites are saved yet.</p>`;
     return;
   }
-
   if (items.length === 0) {
-    resultContainer.innerHTML = `<p class="empty">No direct matches found. Try selecting "Any" budget, clearing keyword search, or switching categories.</p>`;
+    resultContainer.innerHTML = `<p class="empty">No direct matches found. Try broadening filters.</p>`;
     return;
   }
 
   items.forEach((item, index) => {
     const card = template.content.firstElementChild.cloneNode(true);
     card.querySelector(".name").textContent = item.name;
+    card.querySelector(".name").addEventListener("click", () => {
+      window.history.replaceState({}, "", `${window.location.pathname}?id=${encodeURIComponent(item.id)}`);
+      openDetailById(item.id);
+    });
     card.querySelector(".score").textContent = `${item.score} pts`;
-    card.querySelector(".meta").textContent = `${item.city} · ${toTitle(item.category)} · ${item.budget} budget${item.verified ? " · verified" : ""}`;
+
+    const distance = typeof item.distanceMiles === "number" ? ` · ${item.distanceMiles.toFixed(1)} mi` : "";
+    card.querySelector(".meta").textContent = `${item.city} · ${toTitle(item.category)} · ${item.budget} budget${item.verified ? " · verified" : ""}${distance}`;
     card.querySelector(".description").textContent = item.description;
 
-    const favoriteButton = card.querySelector(".favorite-btn");
-    favoriteButton.dataset.id = item.id;
-    favoriteButton.textContent = favorites.has(item.id) ? "★" : "☆";
-    favoriteButton.classList.toggle("active", favorites.has(item.id));
+    const fav = card.querySelector(".favorite-btn");
+    fav.dataset.id = item.id;
+    fav.textContent = favorites.has(item.id) ? "★" : "☆";
+    fav.classList.toggle("active", favorites.has(item.id));
 
     const tagList = card.querySelector(".tags");
-    const statusTag = document.createElement("li");
-    statusTag.textContent = index === 0 ? "Top match" : relaxed ? "Alternative match" : "Recommended";
-    tagList.appendChild(statusTag);
-
-    item.tags.forEach((tag) => {
+    const stateTag = document.createElement("li");
+    stateTag.textContent = index === 0 ? "Top match" : relaxed ? "Alternative match" : "Recommended";
+    tagList.appendChild(stateTag);
+    (item.tags || []).forEach((tag) => {
       const li = document.createElement("li");
       li.textContent = tag;
       tagList.appendChild(li);
     });
 
-    const whyList = card.querySelector(".why-list");
+    const why = card.querySelector(".why-list");
     (item.explanation || []).forEach((reason) => {
       const li = document.createElement("li");
       li.textContent = reason;
-      whyList.appendChild(li);
+      why.appendChild(li);
     });
+
+    const actions = card.querySelector(".card-actions");
+    if (item.address || (typeof item.lat === "number" && typeof item.lng === "number")) {
+      const mapsUrl = item.address
+        ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(item.address)}`
+        : `https://www.google.com/maps/search/?api=1&query=${item.lat},${item.lng}`;
+      actions.insertAdjacentHTML("beforeend", `<a class="action-link" target="_blank" rel="noopener" href="${mapsUrl}">Open in Maps</a>`);
+    }
+    if (item.phone) actions.insertAdjacentHTML("beforeend", `<a class="action-link" href="tel:${item.phone}">Call</a>`);
+    if (item.url) actions.insertAdjacentHTML("beforeend", `<a class="action-link" target="_blank" rel="noopener" href="${item.url}">Website</a>`);
 
     resultContainer.appendChild(card);
   });
@@ -165,23 +233,20 @@ function renderResults(items, relaxed, filters) {
 
 function runSearch(updateQuery = true) {
   const filters = getFilters();
-  const { items, relaxed } = RecoM3ndo.getRecommendations(activeListings, filters);
-  renderSummary(filters, items, relaxed);
-  renderResults(items, relaxed, filters);
+  const rec = RecoM3ndo.getRecommendations(activeListings, filters);
+  const enriched = enrichWithDistance(rec.items);
+  currentItems = applySort(enriched);
+  renderSummary(filters, currentItems, rec.relaxed);
+  renderResults(currentItems, rec.relaxed, filters);
   if (updateQuery) setQueryFromFilters(filters);
 }
 
 function handleCardClicks(event) {
-  const favoriteButton = event.target.closest(".favorite-btn");
-  if (!favoriteButton) return;
-
-  const id = favoriteButton.dataset.id;
-  if (favorites.has(id)) {
-    favorites.delete(id);
-  } else {
-    favorites.add(id);
-  }
-
+  const button = event.target.closest(".favorite-btn");
+  if (!button) return;
+  const id = button.dataset.id;
+  if (favorites.has(id)) favorites.delete(id);
+  else favorites.add(id);
   saveFavorites();
   runSearch(false);
 }
@@ -197,38 +262,36 @@ function readJsonFile(file) {
 
 async function importPack(file) {
   try {
-    const content = await readJsonFile(file);
-    const parsed = JSON.parse(content);
+    const parsed = JSON.parse(await readJsonFile(file));
     const validation = RecoM3ndo.validateListingPack(parsed);
     if (!validation.valid) {
       dataMessage.textContent = `Import failed: ${validation.errors[0]}`;
       return;
     }
-
     localStorage.setItem(STORAGE_KEYS.packOverride, JSON.stringify(parsed));
     activeListings = parsed;
-    dataMessage.textContent = "Import successful. Using your custom data pack.";
+    dataMessage.textContent = "Import successful.";
     runSearch(false);
   } catch (_error) {
-    dataMessage.textContent = "Import failed: unable to parse JSON file.";
+    dataMessage.textContent = "Import failed: invalid JSON.";
   }
 }
 
 function exportPack() {
-  const pack = activeListings.map(RecoM3ndo.toPackListing);
-  const blob = new Blob([JSON.stringify(pack, null, 2)], { type: "application/json" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "recom3ndo-pack.json";
-  link.click();
-  URL.revokeObjectURL(link.href);
+  const payload = activeListings.map(RecoM3ndo.toPackListing);
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "recom3ndo-pack.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
   dataMessage.textContent = "Export complete.";
 }
 
 function resetPack() {
   localStorage.removeItem(STORAGE_KEYS.packOverride);
   activeListings = [...RecoM3ndo.DEFAULT_LISTINGS];
-  dataMessage.textContent = "Reset complete. Default listings restored.";
+  dataMessage.textContent = "Reset complete.";
   runSearch(false);
 }
 
@@ -237,30 +300,54 @@ async function initializeListings() {
   if (override) {
     try {
       const parsed = JSON.parse(override);
-      const validation = RecoM3ndo.validateListingPack(parsed);
-      if (validation.valid) {
+      if (RecoM3ndo.validateListingPack(parsed).valid) {
         activeListings = parsed;
         return;
       }
-    } catch (_error) {
-      // Ignore invalid override.
-    }
+    } catch (_error) {}
   }
 
   try {
-    const response = await fetch("data/listings.json", { cache: "no-store" });
-    if (!response.ok) throw new Error("fetch failed");
-    const remotePack = await response.json();
-    const validation = RecoM3ndo.validateListingPack(remotePack);
-    if (validation.valid) {
-      activeListings = remotePack;
+    const res = await fetch("data/listings.json", { cache: "no-store" });
+    if (!res.ok) throw new Error("fetch");
+    const parsed = await res.json();
+    if (RecoM3ndo.validateListingPack(parsed).valid) {
+      activeListings = parsed;
       return;
     }
-  } catch (_error) {
-    // Fall through to in-memory defaults.
-  }
+  } catch (_error) {}
 
   activeListings = [...RecoM3ndo.DEFAULT_LISTINGS];
+}
+
+function setupModalA11y() {
+  let lastFocus = null;
+  dataButton.addEventListener("click", () => {
+    lastFocus = document.activeElement;
+    dataMessage.textContent = "";
+    dataModal.showModal();
+    importPackInput.focus();
+  });
+
+  dataModal.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") dataModal.close();
+    if (event.key !== "Tab") return;
+    const nodes = Array.from(dataModal.querySelectorAll("button, input, [href], select, textarea")).filter((el) => !el.disabled);
+    if (!nodes.length) return;
+    const first = nodes[0];
+    const last = nodes[nodes.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+      event.preventDefault();
+      first.focus();
+    }
+  });
+
+  dataModal.addEventListener("close", () => {
+    if (lastFocus) lastFocus.focus();
+  });
 }
 
 function bindEvents() {
@@ -273,40 +360,68 @@ function bindEvents() {
     form.reset();
     summary.textContent = "Filters reset. Select a destination and search again.";
     resultContainer.innerHTML = "";
+    detailView.hidden = true;
     window.history.replaceState({}, "", window.location.pathname);
   });
 
   resultContainer.addEventListener("click", handleCardClicks);
 
   copyLinkButton.addEventListener("click", async () => {
-    try {
-      await navigator.clipboard.writeText(window.location.href);
-      showToast("Link copied");
-    } catch (_error) {
-      showToast("Unable to copy link in this browser.");
-    }
-  });
-
-  dataButton.addEventListener("click", () => {
-    dataMessage.textContent = "";
-    dataModal.showModal();
+    await navigator.clipboard.writeText(window.location.href);
+    showToast("Link copied");
   });
 
   importPackInput.addEventListener("change", (event) => {
     const [file] = event.target.files;
     if (file) importPack(file);
   });
-
   exportPackButton.addEventListener("click", exportPack);
   resetPackButton.addEventListener("click", resetPack);
+
+  sortMode.addEventListener("change", () => runSearch(false));
+
+  useLocationButton.addEventListener("click", () => {
+    if (!navigator.geolocation) {
+      showToast("Geolocation not supported.");
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        userLocation = { lat: position.coords.latitude, lng: position.coords.longitude };
+        showToast("Location enabled for nearest sort.");
+        runSearch(false);
+      },
+      () => showToast("Unable to get your location.")
+    );
+  });
+
+  window.addEventListener("online", () => (offlineBanner.hidden = true));
+  window.addEventListener("offline", () => (offlineBanner.hidden = false));
 }
 
 async function init() {
+  registerServiceWorker();
   saveFavorites();
+  installHint.textContent = "Tip: Install this app for offline Traveler Companion mode.";
+  setupModalA11y();
   bindEvents();
+  offlineBanner.hidden = navigator.onLine;
+
   await initializeListings();
-  const hasQuery = applyQueryToForm();
-  if (hasQuery) {
+
+  const route = RecoM3ndo.parseRouteState(window.location.search);
+  document.getElementById("destination").value = route.filters.destination;
+  document.getElementById("category").value = route.filters.category;
+  document.getElementById("budget").value = route.filters.budget;
+  document.getElementById("style").value = route.filters.style;
+  document.getElementById("keyword").value = route.filters.keyword;
+  document.getElementById("max-results").value = String(route.filters.maxResults);
+  document.getElementById("verified-only").checked = route.filters.verifiedOnly;
+  document.getElementById("favorites-only").checked = route.filters.favoritesOnly;
+
+  if (route.detailId) {
+    openDetailById(route.detailId);
+  } else if (window.location.search) {
     runSearch(false);
   } else {
     summary.textContent = "Choose a destination and submit to get started.";

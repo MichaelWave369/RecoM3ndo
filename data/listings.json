@@ -7,8 +7,17 @@
     "budget": "mid",
     "style": "family",
     "description": "Local cuisine and vegetarian options near downtown.",
-    "tags": ["Open late", "Kid menu", "Transit nearby"],
-    "verified": true
+    "tags": [
+      "Open late",
+      "Kid menu",
+      "Transit nearby"
+    ],
+    "verified": true,
+    "lat": 29.7605,
+    "lng": -95.3696,
+    "address": "101 Main St, Houston, TX",
+    "phone": "+17135550101",
+    "url": "https://example.com/bayou-bites"
   },
   {
     "id": "aus-capitol-stay-suites",
@@ -18,8 +27,17 @@
     "budget": "mid",
     "style": "business",
     "description": "Work-friendly hotel with co-working lounge and airport shuttle.",
-    "tags": ["Wi-Fi", "Breakfast", "Airport shuttle"],
-    "verified": true
+    "tags": [
+      "Wi-Fi",
+      "Breakfast",
+      "Airport shuttle"
+    ],
+    "verified": true,
+    "lat": 30.2676,
+    "lng": -97.743,
+    "address": "500 Congress Ave, Austin, TX",
+    "phone": "+15125550102",
+    "url": "https://example.com/capitol-stay"
   },
   {
     "id": "dal-metro-skills-hub",
@@ -29,8 +47,16 @@
     "budget": "low",
     "style": "budget",
     "description": "Job placement, resume reviews, and free upskilling workshops.",
-    "tags": ["Career coaching", "No-cost training", "Hiring events"],
-    "verified": true
+    "tags": [
+      "Career coaching",
+      "No-cost training",
+      "Hiring events"
+    ],
+    "verified": true,
+    "lat": 32.7768,
+    "lng": -96.797,
+    "address": "220 Elm St, Dallas, TX",
+    "phone": "+12145550103"
   },
   {
     "id": "sat-riverwalk-performances",
@@ -40,7 +66,11 @@
     "budget": "low",
     "style": "family",
     "description": "Nightly live music and cultural performances by the river.",
-    "tags": ["Live music", "Outdoor", "Accessible"],
+    "tags": [
+      "Live music",
+      "Outdoor",
+      "Accessible"
+    ],
     "verified": false
   },
   {
@@ -51,8 +81,17 @@
     "budget": "mid",
     "style": "business",
     "description": "Verified contractors for emergency home and rental repairs.",
-    "tags": ["Verified licenses", "24/7 support", "Multi-language"],
-    "verified": true
+    "tags": [
+      "Verified licenses",
+      "24/7 support",
+      "Multi-language"
+    ],
+    "verified": true,
+    "lat": 29.7499,
+    "lng": -95.3584,
+    "address": "810 Repair Ln, Houston, TX",
+    "phone": "+17135550104",
+    "url": "https://example.com/lone-star-repair"
   },
   {
     "id": "aus-city-support-center",
@@ -62,7 +101,11 @@
     "budget": "low",
     "style": "family",
     "description": "Guidance for transit cards, food aid, and temporary housing support.",
-    "tags": ["Case workers", "Walk-in help", "Document checklist"],
+    "tags": [
+      "Case workers",
+      "Walk-in help",
+      "Document checklist"
+    ],
     "verified": true
   },
   {
@@ -73,7 +116,11 @@
     "budget": "high",
     "style": "business",
     "description": "Premium business lodging close to convention spaces.",
-    "tags": ["Conference rooms", "Gym", "Lounge"],
+    "tags": [
+      "Conference rooms",
+      "Gym",
+      "Lounge"
+    ],
     "verified": true
   },
   {
@@ -84,7 +131,11 @@
     "budget": "low",
     "style": "budget",
     "description": "Affordable local meals with quick service and family seating.",
-    "tags": ["Under $15", "Quick service", "Family tables"],
+    "tags": [
+      "Under $15",
+      "Quick service",
+      "Family tables"
+    ],
     "verified": false
   },
   {
@@ -95,8 +146,17 @@
     "budget": "low",
     "style": "budget",
     "description": "Workforce center with interview prep and short-term certifications.",
-    "tags": ["Resume clinic", "Employer partners", "Certification vouchers"],
-    "verified": true
+    "tags": [
+      "Resume clinic",
+      "Employer partners",
+      "Certification vouchers"
+    ],
+    "verified": true,
+    "lat": 29.7522,
+    "lng": -95.3677,
+    "address": "50 Career Blvd, Houston, TX",
+    "phone": "+17135550105",
+    "url": "https://example.com/workstart"
   },
   {
     "id": "hou-harborline-inn",
@@ -106,7 +166,16 @@
     "budget": "high",
     "style": "business",
     "description": "Comfortable hotel with business center and child-friendly amenities.",
-    "tags": ["Business lounge", "Pool", "Free parking"],
-    "verified": true
+    "tags": [
+      "Business lounge",
+      "Pool",
+      "Free parking"
+    ],
+    "verified": true,
+    "lat": 29.7438,
+    "lng": -95.3595,
+    "address": "90 Harbor View, Houston, TX",
+    "phone": "+17135550106",
+    "url": "https://example.com/harborline"
   }
 ]

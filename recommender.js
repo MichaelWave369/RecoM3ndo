@@ -157,7 +157,9 @@
       verified: Boolean(item.verified),
       ...(item.url ? { url: item.url } : {}),
       ...(item.phone ? { phone: item.phone } : {}),
-      ...(item.address ? { address: item.address } : {})
+      ...(item.address ? { address: item.address } : {}),
+      ...(typeof item.lat === "number" ? { lat: item.lat } : {}),
+      ...(typeof item.lng === "number" ? { lng: item.lng } : {})
     };
   }
 
@@ -200,6 +202,12 @@
       ["url", "phone", "address"].forEach((field) => {
         if (item[field] !== undefined && typeof item[field] !== "string") {
           errors.push(`Item ${index + 1}: ${field} must be a string when provided.`);
+        }
+      });
+
+      ["lat", "lng"].forEach((field) => {
+        if (item[field] !== undefined && typeof item[field] !== "number") {
+          errors.push(`Item ${index + 1}: ${field} must be a number when provided.`);
         }
       });
     });
@@ -337,13 +345,43 @@
     };
   }
 
+  function haversineMiles(a, b) {
+    const toRad = (d) => (d * Math.PI) / 180;
+    const R = 3958.8;
+    const dLat = toRad(b.lat - a.lat);
+    const dLng = toRad(b.lng - a.lng);
+    const x = Math.sin(dLat / 2) ** 2 + Math.cos(toRad(a.lat)) * Math.cos(toRad(b.lat)) * Math.sin(dLng / 2) ** 2;
+    return 2 * R * Math.atan2(Math.sqrt(x), Math.sqrt(1 - x));
+  }
+
+  function parseRouteState(queryString) {
+    const raw = queryString.startsWith("?") ? queryString.slice(1) : queryString;
+    const params = new URLSearchParams(raw);
+    const detailId = params.get("id") || "";
+    return {
+      detailId,
+      filters: {
+        destination: params.get("destination") || "",
+        category: params.get("category") || "all",
+        budget: params.get("budget") || "any",
+        style: params.get("style") || "any",
+        keyword: params.get("keyword") || "",
+        maxResults: Number(params.get("max") || 6),
+        verifiedOnly: params.get("verifiedOnly") === "1",
+        favoritesOnly: params.get("favoritesOnly") === "1"
+      }
+    };
+  }
+
   const api = {
     DEFAULT_LISTINGS,
     normalize,
     matchesKeyword,
     validateListingPack,
     toPackListing,
-    getRecommendations
+    getRecommendations,
+    haversineMiles,
+    parseRouteState
   };
 
   if (typeof module !== "undefined" && module.exports) {

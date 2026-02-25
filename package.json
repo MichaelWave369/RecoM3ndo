@@ -1,0 +1,9 @@
+{
+  "name": "recom3ndo",
+  "version": "0.3.0",
+  "private": true,
+  "scripts": {
+    "test": "node test.js",
+    "check": "node --check app.js"
+  }
+}

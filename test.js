@@ -1,5 +1,5 @@
 const assert = require("assert");
-const { getRecommendations, normalize, validateListingPack } = require("./recommender.js");
+const { getRecommendations, normalize, validateListingPack, haversineMiles, parseRouteState } = require("./recommender.js");
 
 const exact = getRecommendations({
   destination: "Houston",
@@ -32,23 +32,24 @@ const explanation = exact.items[0].explanation.join(" ").toLowerCase();
 assert.ok(explanation.includes("city matched"), "Expected explanation to include city match reason");
 assert.ok(explanation.includes("keyword matched"), "Expected explanation to include keyword match reason");
 
-const invalidPack = [
-  {
-    id: "x1",
-    name: "Bad Item",
-    city: "Houston",
-    category: "dining",
-    budget: "wrong",
-    style: "family",
-    description: "Invalid budget value",
-    tags: ["tag"],
-    verified: true
-  }
-];
-
+const invalidPack = [{
+  id: "x1", name: "Bad Item", city: "Houston", category: "dining", budget: "wrong", style: "family", description: "Invalid budget", tags: ["tag"], verified: true
+}];
 const validation = validateListingPack(invalidPack);
 assert.equal(validation.valid, false, "Expected invalid pack to fail validation");
 assert.ok(validation.errors[0].includes("budget"), "Expected validation error to mention budget");
+
+const miles = haversineMiles({ lat: 29.7604, lng: -95.3698 }, { lat: 30.2672, lng: -97.7431 });
+assert.ok(miles > 140 && miles < 160, `Expected Houston->Austin distance rough range, got ${miles}`);
+
+const routeA = parseRouteState("?destination=Houston&category=hotels&max=9&verifiedOnly=1");
+assert.equal(routeA.filters.destination, "Houston");
+assert.equal(routeA.filters.category, "hotels");
+assert.equal(routeA.filters.maxResults, 9);
+assert.equal(routeA.filters.verifiedOnly, true);
+
+const routeB = parseRouteState("?id=hou-workstart-center");
+assert.equal(routeB.detailId, "hou-workstart-center", "Expected id route parsing for detail view");
 
 assert.equal(normalize("  SHUTTLE "), "shuttle", "Normalize should trim and lowercase values");
 
