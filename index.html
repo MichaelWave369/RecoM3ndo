@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>RecoM3ndo Traveler Assistant v0.2.0</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="hero">
+      <h1>RecoM3ndo Traveler Assistant</h1>
+      <p>Phase 6 (v0.2.0): Data Packs, Favorites, Share Links, and Explain-Why scoring.</p>
+    </header>
+
+    <main>
+      <section class="search-panel">
+        <div class="toolbar">
+          <h2>Plan Your Needs</h2>
+          <div class="toolbar-actions">
+            <button type="button" id="data-btn" class="secondary">Data</button>
+            <button type="button" id="copy-link-btn" class="secondary">Copy Share Link</button>
+            <span id="favorites-count" class="pill">Favorites: 0</span>
+          </div>
+        </div>
+
+        <form id="recommendation-form">
+          <div class="grid">
+            <label>
+              Destination
+              <select id="destination" required>
+                <option value="">Choose a city</option>
+                <option>Houston</option>
+                <option>Austin</option>
+                <option>Dallas</option>
+                <option>San Antonio</option>
+              </select>
+            </label>
+
+            <label>
+              Need Type
+              <select id="category">
+                <option value="all">All</option>
+                <option value="dining">Dining</option>
+                <option value="hotels">Hotels</option>
+                <option value="entertainment">Entertainment</option>
+                <option value="contractors">Contractors</option>
+                <option value="government_assistance">Government Assistance</option>
+                <option value="employment_programs">Employment Programs</option>
+              </select>
+            </label>
+
+            <label>
+              Budget Level
+              <select id="budget">
+                <option value="any">Any</option>
+                <option value="low">Low</option>
+                <option value="mid">Mid</option>
+                <option value="high">High</option>
+              </select>
+            </label>
+
+            <label>
+              Travel Style
+              <select id="style">
+                <option value="any">Any</option>
+                <option value="family">Family Friendly</option>
+                <option value="solo">Solo</option>
+                <option value="business">Business</option>
+                <option value="budget">Budget Saver</option>
+              </select>
+            </label>
+
+            <label>
+              Keyword Search
+              <input id="keyword" type="text" placeholder="e.g., jobs, kid menu, shuttle" />
+            </label>
+
+            <label>
+              Max Results
+              <select id="max-results">
+                <option value="3">Top 3</option>
+                <option value="6" selected>Top 6</option>
+                <option value="9">Top 9</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="controls">
+            <label class="checkbox-row">
+              <input id="verified-only" type="checkbox" />
+              Verified only
+            </label>
+            <label class="checkbox-row">
+              <input id="favorites-only" type="checkbox" />
+              Favorites only
+            </label>
+
+            <div class="actions">
+              <button type="submit">Get Recommendations</button>
+              <button type="button" id="reset-btn" class="secondary">Reset</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <section>
+        <div class="section-header">
+          <h2>Recommended Results</h2>
+          <p id="result-summary" aria-live="polite"></p>
+        </div>
+        <div id="results" class="cards" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <dialog id="data-modal" class="modal">
+      <form method="dialog" class="modal-content">
+        <h3>Data Pack Manager</h3>
+        <p>Import/export listing packs (schema v1). Imported data is stored locally in your browser.</p>
+        <label>
+          Import JSON
+          <input id="import-pack-input" type="file" accept="application/json" />
+        </label>
+        <p id="data-message" class="modal-message"></p>
+        <div class="actions">
+          <button id="export-pack-btn" type="button">Export JSON</button>
+          <button id="reset-pack-btn" type="button" class="secondary">Reset to Default</button>
+          <button id="close-data-modal-btn" type="submit" class="secondary">Close</button>
+        </div>
+      </form>
+    </dialog>
+
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+    <template id="card-template">
+      <article class="card">
+        <div class="card-top">
+          <h3 class="name"></h3>
+          <div class="card-top-actions">
+            <span class="score"></span>
+            <button type="button" class="favorite-btn" title="Toggle favorite" aria-label="Toggle favorite">☆</button>
+          </div>
+        </div>
+        <p class="meta"></p>
+        <p class="description"></p>
+        <ul class="tags"></ul>
+        <details class="why-details">
+          <summary>Why this match?</summary>
+          <ul class="why-list"></ul>
+        </details>
+      </article>
+    </template>
+
+    <script src="recommender.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

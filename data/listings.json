@@ -1,0 +1,112 @@
+[
+  {
+    "id": "hou-bayou-bites",
+    "name": "Bayou Bites",
+    "city": "Houston",
+    "category": "dining",
+    "budget": "mid",
+    "style": "family",
+    "description": "Local cuisine and vegetarian options near downtown.",
+    "tags": ["Open late", "Kid menu", "Transit nearby"],
+    "verified": true
+  },
+  {
+    "id": "aus-capitol-stay-suites",
+    "name": "Capitol Stay Suites",
+    "city": "Austin",
+    "category": "hotels",
+    "budget": "mid",
+    "style": "business",
+    "description": "Work-friendly hotel with co-working lounge and airport shuttle.",
+    "tags": ["Wi-Fi", "Breakfast", "Airport shuttle"],
+    "verified": true
+  },
+  {
+    "id": "dal-metro-skills-hub",
+    "name": "Metro Skills Employment Hub",
+    "city": "Dallas",
+    "category": "employment_programs",
+    "budget": "low",
+    "style": "budget",
+    "description": "Job placement, resume reviews, and free upskilling workshops.",
+    "tags": ["Career coaching", "No-cost training", "Hiring events"],
+    "verified": true
+  },
+  {
+    "id": "sat-riverwalk-performances",
+    "name": "River Walk Performances",
+    "city": "San Antonio",
+    "category": "entertainment",
+    "budget": "low",
+    "style": "family",
+    "description": "Nightly live music and cultural performances by the river.",
+    "tags": ["Live music", "Outdoor", "Accessible"],
+    "verified": false
+  },
+  {
+    "id": "hou-lone-star-home-repair",
+    "name": "Lone Star Home Repair Network",
+    "city": "Houston",
+    "category": "contractors",
+    "budget": "mid",
+    "style": "business",
+    "description": "Verified contractors for emergency home and rental repairs.",
+    "tags": ["Verified licenses", "24/7 support", "Multi-language"],
+    "verified": true
+  },
+  {
+    "id": "aus-city-support-center",
+    "name": "City Support Resource Center",
+    "city": "Austin",
+    "category": "government_assistance",
+    "budget": "low",
+    "style": "family",
+    "description": "Guidance for transit cards, food aid, and temporary housing support.",
+    "tags": ["Case workers", "Walk-in help", "Document checklist"],
+    "verified": true
+  },
+  {
+    "id": "dal-convention-district-hotel",
+    "name": "Convention District Hotel",
+    "city": "Dallas",
+    "category": "hotels",
+    "budget": "high",
+    "style": "business",
+    "description": "Premium business lodging close to convention spaces.",
+    "tags": ["Conference rooms", "Gym", "Lounge"],
+    "verified": true
+  },
+  {
+    "id": "sat-budget-bistro-loop",
+    "name": "Budget Bistro Loop",
+    "city": "San Antonio",
+    "category": "dining",
+    "budget": "low",
+    "style": "budget",
+    "description": "Affordable local meals with quick service and family seating.",
+    "tags": ["Under $15", "Quick service", "Family tables"],
+    "verified": false
+  },
+  {
+    "id": "hou-workstart-center",
+    "name": "WorkStart Center",
+    "city": "Houston",
+    "category": "employment_programs",
+    "budget": "low",
+    "style": "budget",
+    "description": "Workforce center with interview prep and short-term certifications.",
+    "tags": ["Resume clinic", "Employer partners", "Certification vouchers"],
+    "verified": true
+  },
+  {
+    "id": "hou-harborline-inn",
+    "name": "Harborline Inn",
+    "city": "Houston",
+    "category": "hotels",
+    "budget": "high",
+    "style": "business",
+    "description": "Comfortable hotel with business center and child-friendly amenities.",
+    "tags": ["Business lounge", "Pool", "Free parking"],
+    "verified": true
+  }
+]
